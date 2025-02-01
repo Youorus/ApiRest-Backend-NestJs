@@ -1,4 +1,11 @@
-import { IsEmail, IsNotEmpty, IsEnum, IsArray, IsDate } from 'class-validator';
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsEnum,
+  IsArray,
+  IsDate,
+  IsBoolean,
+} from 'class-validator';
 import { SchoolLevel } from '@prisma/client';
 import { Transform } from 'class-transformer';
 
@@ -16,6 +23,8 @@ export class CreateStudentDto {
   @Transform(({ value }) => new Date(value))
   @IsDate()
   dob: Date;
+  @IsBoolean()
+  termsAccepted: boolean;
 }
 
 export class CreateIndividualDto {
@@ -25,6 +34,8 @@ export class CreateIndividualDto {
   @IsNotEmpty() city: string;
   @IsNotEmpty() firstName: string;
   @IsNotEmpty() lastName: string;
+  @IsBoolean()
+  termsAccepted: boolean;
 }
 
 export class CreateCompanyDto {
@@ -34,6 +45,8 @@ export class CreateCompanyDto {
   @IsNotEmpty() city: string;
   @IsNotEmpty() companyName: string;
   @IsNotEmpty() siretNumber: string;
+  @IsBoolean()
+  termsAccepted: boolean;
 }
 
 export class CreateAdminDto {
@@ -42,4 +55,6 @@ export class CreateAdminDto {
   @IsNotEmpty() country: string;
   @IsNotEmpty() city: string;
   @IsNotEmpty() userName: string;
+  @IsBoolean()
+  termsAccepted: boolean;
 }

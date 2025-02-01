@@ -27,6 +27,7 @@ export class UserService implements IUserService {
         country: data.country,
         city: data.city,
         accountType: 'STUDENT',
+        termsAccepted: data.termsAccepted,
         student: {
           create: {
             firstName: data.firstName,
@@ -51,6 +52,7 @@ export class UserService implements IUserService {
         country: data.country,
         city: data.city,
         accountType: 'INDIVIDUAL',
+        termsAccepted: data.termsAccepted,
         client: {
           create: {
             type: 'INDIVIDUAL',
@@ -76,6 +78,7 @@ export class UserService implements IUserService {
         country: data.country,
         city: data.city,
         accountType: 'COMPANY',
+        termsAccepted: data.termsAccepted,
         client: {
           create: {
             type: 'COMPANY',
@@ -101,6 +104,7 @@ export class UserService implements IUserService {
         country: data.country,
         city: data.city,
         accountType: 'ADMIN',
+        termsAccepted: data.termsAccepted,
         admin: {
           create: {
             userName: data.userName,
