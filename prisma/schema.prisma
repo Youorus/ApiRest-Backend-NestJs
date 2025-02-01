@@ -12,3 +12,270 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+enum AccountType {
+  COMPANY
+  INDIVIDUAL
+  STUDENT
+  ADMIN
+}
+
+enum SchoolLevel {
+  PRIMARY
+  SECONDARY
+  BACHELOR
+  MASTER
+}
+
+enum AppointmentStatus {
+  CONFIRMED   // Confirmé
+  CANCELLED   // Annulé
+  COMPLETED   // Terminé
+}
+
+enum ProjectStatus {
+  IN_PROGRESS // "En cours"
+  COMPLETED   // "Terminé"
+  PENDING     // "En attente"
+  CANCELED    // "Annulé"
+  RECEIVED    // "Reçu"
+}
+
+enum ProjectCategory {
+  ECOMMERCE           // E-commerce
+  WEB                 // Web
+  MOBILE              // Mobile
+  UX_UI               // UX/UI
+  MARKETING_SEO       // Marketing / SEO
+  AUTOMATION_API      // Automatisation / API
+  SECURITY_HOSTING    // Sécurité / Hébergement
+  MAINTENANCE_SUPPORT // Maintenance / Dépannage
+}
+
+enum ServiceType {
+  WEBSITE_CREATION       // Création de site web
+  WEBSITE_REDESIGN       // Refonte de site web
+  WORDPRESS_SITE         // Site WordPress
+  SEO_OPTIMIZATION       // Optimisation SEO
+  ECOMMERCE_SITE         // Site e-commerce
+  PAYMENT_INTEGRATION    // Intégration de paiements
+  MOBILE_APP             // Application mobile
+  LOGO_REDESIGN          // Refonte de logo
+  UI_UX_DESIGN           // Design UI/UX
+  API_AUTOMATION         // Automatisation d'API
+  SITE_SECURITY          // Sécurité du site
+  REGULAR_MAINTENANCE    // Maintenance régulière
+  EMERGENCY_REPAIR       // Réparation d'urgence
+}
+
+enum MissionLevel {
+  EASY       // Niveau facile
+  MEDIUM     // Niveau moyen
+  HARD       // Niveau difficile
+}
+
+enum UnavailabilityReason {
+  BOOKED
+  ON_LEAVE
+}
+
+enum MissionStatus {
+  CREATED       // Mission créée mais pas encore assignée
+  ASSIGNED      // Mission assignée à un étudiant
+  IN_PROGRESS   // Étudiant travaille sur la mission
+  COMPLETED     // Mission terminée par l'étudiant
+  REVIEWED      // Mission révisée par l'admin
+  CANCELLED     // Mission annulée
+}
+
+
+model User {
+  userId         String      @id @default(uuid())
+  email          String      @unique
+  password       String
+  country        String
+  city           String
+  createdAt      DateTime    @default(now())
+  accountType    AccountType
+  termsAccepted  Boolean     @default(false)
+  emailVerified  Boolean     @default(false)
+
+  // Relations
+  student        Student?    @relation("UserToStudent")
+  client         Client?     @relation("UserToClient")
+  admin          Admin?      @relation("UserToAdmin")
+}
+
+model Admin {
+  adminId       Int      @id @default(autoincrement())
+  userId        String      @unique
+  userName      String      
+
+  // Relation avec User
+  user          User        @relation("UserToAdmin", fields: [userId], references: [userId], onDelete: Cascade)
+
+  project       Project[]  // Un admin peut manager plusieurs projets
+  availability  Availability[] // Un admin peut avoir plusieurs disponibilités
+
+  // Relation avec Appointment
+  appointment   Appointment[]  // Un admin peut avoir plusieurs rendez-vous
+
+  // Relation avec Mission
+  mission       Mission[]      // Un admin peut avoir plusieurs missions
+
+  // Relation avec Unavailability
+  unavailability Unavailability[] // Un admin peut avoir plusieurs indisponibilités
+}
+
+model Availability {
+  id          Int    @id @default(autoincrement())
+  adminId     Int
+  startDate   DateTime
+  endDate     DateTime
+  startTime   DateTime
+  endTime     DateTime
+
+  // Relation avec Admin
+  admin       Admin     @relation(fields: [adminId], references: [adminId], onDelete: Cascade)
+
+}
+
+
+model Student {
+  studentId       Int     @id @default(autoincrement())
+  userId          String      @unique
+  firstName       String     
+  lastName        String      
+  birthDate       DateTime
+  schoolName      String      
+  profileVerified Boolean     @default(false)
+  schoolLevel     SchoolLevel
+  skills          String[]    // Tableau des compétences
+  updatedAt       DateTime    @updatedAt
+
+  // Relation avec User
+  user            User        @relation("UserToStudent", fields: [userId], references: [userId], onDelete: Cascade)
+
+  // Relation avec Mission
+  mission         Mission[]   // Un étudiant peut avoir plusieurs missions
+}
+
+model Client {
+  clientId      Int      @id @default(autoincrement())
+  userId        String      @unique
+  type          AccountType
+
+  // Relations avec User
+  user          User        @relation("UserToClient", fields: [userId], references: [userId], onDelete: Cascade)
+
+  // Relations avec Individual et Company
+  individual    Individual?
+  company       Company?
+
+  project       Project[]  // Un client peut avoir plusieurs projets
+  appointment   Appointment[] // Un client peut avoir plusieurs rendez-vous
+}
+
+model Individual {
+  individualId  Int      @id @default(autoincrement())
+  clientId      Int      @unique
+  firstName     String     
+  lastName      String      
+
+  // Relation avec Client
+  client        Client      @relation(fields: [clientId], references: [clientId], onDelete: Cascade)
+}
+
+model Company {
+  companyId     Int     @id @default(autoincrement())
+  clientId      Int      @unique
+  companyName   String    
+  siretNumber   String      @db.VarChar(14) @unique
+
+  // Relation avec Client
+  client        Client      @relation(fields: [clientId], references: [clientId], onDelete: Cascade)
+}
+
+model Project {
+  projectId     Int        @id @default(autoincrement())
+  title         String         @db.VarChar(255)
+  description   String?        @db.VarChar(2000)
+  category      ProjectCategory
+  service       ServiceType
+  createdAt     DateTime       @default(now())
+  progress      Int            @default(0)
+  gitRepoUrl    String?
+  status        ProjectStatus  @default(RECEIVED)
+
+ // Relation avec Client
+  clientId      Int
+  client        Client         @relation(fields: [clientId], references: [clientId], onDelete: Cascade)
+
+  // Relation avec Admin
+  adminId       Int
+  admin         Admin          @relation(fields: [adminId], references: [adminId], onDelete: Cascade)
+
+  // Relation avec Appointment
+  appointment   Appointment[]  // Un projet peut avoir plusieurs rendez-vous
+
+  // Relation avec Mission
+  mission       Mission[]      // Un projet peut avoir plusieurs missions
+}
+
+model Appointment {
+  id          Int              @id @default(autoincrement())
+  clientId    Int
+  adminId     Int
+  projectId   Int
+  date        DateTime         // Date du rendez-vous
+  subject     String          
+  time        DateTime         // Heure du rendez-vous
+  duration    Int              // Durée en minutes
+  status      AppointmentStatus @default(CONFIRMED) // Statut par défaut : Confirmé
+
+  // Relation avec Client
+  client      Client           @relation(fields: [clientId], references: [clientId], onDelete: Cascade)
+
+  // Relation avec Admin
+  admin       Admin            @relation(fields: [adminId], references: [adminId], onDelete: Cascade)
+
+  // Relation avec Project
+  project     Project          @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
+}
+
+model Mission {
+  id              Int             @id @default(autoincrement())
+  title           String          @db.VarChar(255)
+  description     String          @db.VarChar(1000)
+  missionLevel    MissionLevel
+  price           Float
+  status          MissionStatus
+  urlMission      String          @unique
+  createdAt       DateTime        @default(now())
+  assignedAt      DateTime?
+  skills          String[]        // Tableau de compétences
+
+  // Relation avec Admin
+  adminId         Int
+  admin           Admin           @relation(fields: [adminId], references: [adminId], onDelete: Cascade)
+
+  // Relation avec Student (peut être null si non assigné)
+  studentId       Int?
+  assignedStudent Student?        @relation(fields: [studentId], references: [studentId], onDelete: Cascade)
+
+  // Relation avec Project
+  projectId       Int
+  project         Project         @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
+}
+
+model Unavailability {
+  id           Int                @id @default(autoincrement())
+  adminId      Int             
+  date         DateTime           // Date de l'indisponibilité
+  startTime    DateTime           // Heure de début
+  endTime      DateTime           // Heure de fin
+  reason       UnavailabilityReason
+
+  // Relation avec Admin
+  admin        Admin              @relation(fields: [adminId], references: [adminId], onDelete: Cascade)
+}
