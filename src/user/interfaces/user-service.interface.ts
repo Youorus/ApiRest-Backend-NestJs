@@ -7,7 +7,7 @@ import {
   CreateStudentDto,
 } from 'src/dto/create-user.dto';
 
-export interface IUserService {
+export interface IUserCreateService {
   createStudent(data: CreateStudentDto): Promise<User>;
   createIndividual(data: CreateIndividualDto): Promise<User>;
   createCompany(data: CreateCompanyDto): Promise<User>;

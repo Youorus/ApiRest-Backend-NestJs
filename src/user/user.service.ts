@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import {
   CreateAdminDto,
@@ -6,11 +10,13 @@ import {
   CreateIndividualDto,
   CreateStudentDto,
 } from 'src/dto/create-user.dto';
-import { IUserService } from './interfaces/user-service.interface';
 import * as bcrypt from 'bcrypt';
+import { User } from '@prisma/client';
+import { LoginDto } from 'src/dto/login.dto';
+import { IUserCreateService } from './interfaces/user-service.interface';
 
 @Injectable()
-export class UserService implements IUserService {
+export class UserService implements IUserCreateService {
   constructor(private readonly prisma: PrismaService) {}
 
   private async hashPassword(password: string): Promise<string> {
@@ -111,6 +117,41 @@ export class UserService implements IUserService {
           },
         },
       },
+    });
+  }
+
+  async validateUser(data: LoginDto): Promise<User> {
+    const { email, password } = data;
+
+    // 🔥 Utilisation de la nouvelle méthode `getUserByEmail`
+    const user = await this.getUserByEmail(email);
+
+    // Si l'utilisateur n'existe pas
+    if (!user) {
+      throw new NotFoundException(
+        "Cet email n'est pas enregistré. Veuillez créer un compte.",
+      );
+    }
+
+    // Vérifier si le mot de passe est correct
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      throw new UnauthorizedException(
+        'Le mot de passe est incorrect. Réessayez.',
+      );
+    }
+    return user;
+  }
+
+  async getUserByEmail(email: string): Promise<User | null> {
+    return this.prisma.user.findUnique({
+      where: { email },
+    });
+  }
+
+  async getUserById(userId: string) {
+    return this.prisma.user.findUnique({
+      where: { userId }, //Requête plus rapide
     });
   }
 }

@@ -1,14 +1,24 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import * as fs from 'fs';
+import * as cookieParser from 'cookie-parser';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const httpsOptions = {
+    key: fs.readFileSync('server.key'),
+    cert: fs.readFileSync('server.cert'),
+  };
+  const app = await NestFactory.create(AppModule, { httpsOptions });
+
+  // Activer Cookie-Parser (nécessaire pour lire les tokens stockés en cookie)
+  app.use(cookieParser());
+
   app.enableCors({
-    origin: 'http://localhost:3001', // Accepter uniquement ce domaine
+    origin: 'https://localhost:3000', // Accepter uniquement ce domaine
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true, // Autoriser l'envoi de cookies (si nécessaire)
   });
-  await app.listen(process.env.PORT ?? 3002);
+  await app.listen(process.env.PORT ?? 3006);
 }
 bootstrap();
