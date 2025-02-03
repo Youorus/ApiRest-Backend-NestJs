@@ -18,7 +18,6 @@ export class AuthGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean {
     const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
     const accessToken = request.cookies?.['access_token']; // Vérifie si les cookies existent
-    console.log('accessToken:', accessToken);
 
     if (!accessToken) {
       throw new UnauthorizedException('No access token provided');
@@ -30,7 +29,6 @@ export class AuthGuard implements CanActivate {
       });
 
       request['user'] = payload; // Attache l'utilisateur à la requête pour un accès ultérieur
-      console.log('Authenticated user:', request.user);
 
       return true;
     } catch (error) {

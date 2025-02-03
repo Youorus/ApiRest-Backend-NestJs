@@ -119,27 +119,25 @@ export class UserService implements IUserCreateService {
       },
     });
   }
-
   async validateUser(data: LoginDto): Promise<User> {
     const { email, password } = data;
 
-    // 🔥 Utilisation de la nouvelle méthode `getUserByEmail`
+    // 🔥 Recherche unique de l'utilisateur
     const user = await this.getUserByEmail(email);
-
-    // Si l'utilisateur n'existe pas
     if (!user) {
-      throw new NotFoundException(
-        "Cet email n'est pas enregistré. Veuillez créer un compte.",
-      );
+      throw new NotFoundException({
+        errorCode: 'EMAIL_NOT_FOUND',
+      });
     }
 
-    // Vérifier si le mot de passe est correct
+    // 🔥 Vérification du mot de passe
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      throw new UnauthorizedException(
-        'Le mot de passe est incorrect. Réessayez.',
-      );
+      throw new UnauthorizedException({
+        errorCode: 'INVALID_PASSWORD',
+      });
     }
+
     return user;
   }
 

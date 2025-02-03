@@ -1,4 +1,9 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { LoginDto } from 'src/dto/login.dto';
 import { UserService } from 'src/user/user.service';
@@ -12,25 +17,37 @@ export class AuthService {
   ) {}
 
   async login(loginRequest: LoginDto, res: Response) {
-    const user = await this.usersService.validateUser(loginRequest);
-    if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
+    try {
+      const user = await this.usersService.validateUser(loginRequest);
 
-    const payload = {
-      sub: user.userId,
-      role: user.accountType,
-    };
-
-    this.generateAccessToken(res, payload);
-    this.generateRefreshToken(res, payload);
-
-    return res.json({
-      userInfo: {
+      const payload = {
         sub: user.userId,
         role: user.accountType,
-      },
-    });
+      };
+
+      this.generateAccessToken(res, payload);
+      this.generateRefreshToken(res, payload);
+
+      return res.json({
+        sub: user.userId,
+        role: user.accountType,
+      });
+    } catch (error) {
+      console.error('🚨 Erreur lors du login :', error);
+
+      // Si l'erreur est une exception NestJS, on renvoie la réponse appropriée
+      if (
+        error instanceof NotFoundException ||
+        error instanceof UnauthorizedException
+      ) {
+        return res.status(error.getStatus()).json(error.getResponse());
+      }
+
+      // Si c'est une erreur inconnue, renvoyer une erreur 500
+      return res.status(500).json({
+        errorCode: 'INTERNAL_SERVER_ERROR',
+      });
+    }
   }
 
   generateAccessToken(res: Response, payload: any): string {

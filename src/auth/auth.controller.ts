@@ -34,13 +34,6 @@ export class AuthController {
     return this.authService.login(loginDto, res);
   }
 
-  @Get('profile')
-  @UseGuards(AuthGuard)
-  getProfile(@Req() req) {
-    console.log('req.user', req.user);
-    return req.user;
-  }
-
   @Post('refresh')
   async refreshToken(@Req() req: CustomRequest, @Res() res: Response) {
     const refreshToken = req.cookies?.refresh_token; // Récupère le token stocké en cookie
