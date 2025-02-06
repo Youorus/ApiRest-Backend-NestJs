@@ -9,6 +9,12 @@ import {
 import { SchoolLevel } from '@prisma/client';
 import { Transform } from 'class-transformer';
 
+export class UserDto {
+  @IsEmail()
+  @IsNotEmpty()
+  email: string;
+}
+
 export class CreateStudentDto {
   @IsEmail() email: string;
   @IsNotEmpty() password: string;
@@ -57,4 +63,10 @@ export class CreateAdminDto {
   @IsNotEmpty() userName: string;
   @IsBoolean()
   termsAccepted: boolean;
+}
+
+export class UserExistsDto {
+  @IsEmail()
+  @IsNotEmpty()
+  email: string;
 }

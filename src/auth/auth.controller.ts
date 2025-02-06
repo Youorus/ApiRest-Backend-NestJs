@@ -10,12 +10,13 @@ import {
   Get,
   Req,
   UnauthorizedException,
-  UseGuards,
+  Query,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from '../dto/login.dto'; // Vérifie que ce fichier existe bien
 import { Response } from 'express';
-import { AuthGuard } from './auth.guard';
+import { UserExistsDto } from 'src/dto/create-user.dto';
+import { Public } from './decorators/public.decorator';
 
 interface CustomRequest extends Request {
   cookies: { refresh_token?: string };
@@ -28,6 +29,7 @@ export class AuthController {
     private readonly JwtService: JwtService,
   ) {}
 
+  @Public()
   @Post('login')
   @UsePipes(new ValidationPipe({ whitelist: true }))
   async login(@Body() loginDto: LoginDto, @Res() res: Response) {
@@ -67,5 +69,13 @@ export class AuthController {
   logout(@Res() res: Response) {
     res.clearCookie('refresh_token');
     return res.status(200).json({ message: 'Logged out' });
+  }
+
+  @Get('user-exists')
+  async userExists(@Query() query: UserExistsDto) {
+    const { email } = query;
+
+    const exists = await this.authService.userExists(email);
+    return { exists };
   }
 }

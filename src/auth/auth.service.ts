@@ -2,7 +2,6 @@ import {
   Injectable,
   NotFoundException,
   UnauthorizedException,
-  InternalServerErrorException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { LoginDto } from 'src/dto/login.dto';
@@ -21,7 +20,7 @@ export class AuthService {
       const user = await this.usersService.validateUser(loginRequest);
 
       const payload = {
-        sub: user.userId,
+        sub: user.email,
         role: user.accountType,
       };
 
@@ -29,7 +28,7 @@ export class AuthService {
       this.generateRefreshToken(res, payload);
 
       return res.json({
-        sub: user.userId,
+        sub: user.email,
         role: user.accountType,
       });
     } catch (error) {
@@ -77,5 +76,18 @@ export class AuthService {
       expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // Expire après 7 jours
     });
     return refreshToken;
+  }
+
+  async userExists(email: string): Promise<boolean> {
+    try {
+      const user = await this.usersService.getUserByEmail(email);
+      return Boolean(user);
+    } catch (error) {
+      console.error(
+        `🚨 Erreur lors de la vérification de l'utilisateur :`,
+        error,
+      );
+      return false;
+    }
   }
 }
