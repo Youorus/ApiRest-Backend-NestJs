@@ -36,33 +36,20 @@ export class AuthController {
     return this.authService.login(loginDto, res);
   }
 
+  @Public()
   @Post('refresh')
   async refreshToken(@Req() req: CustomRequest, @Res() res: Response) {
-    const refreshToken = req.cookies?.refresh_token; // Récupère le token stocké en cookie
+    console.log('📥 Requête reçue sur /auth/refresh');
+    console.log('🔍 Cookies reçus :', req.cookies);
+
+    const refreshToken = req.cookies?.refresh_token;
 
     if (!refreshToken) {
+      console.warn('⚠️ Aucun refresh token trouvé dans les cookies !');
       throw new UnauthorizedException('No refresh token provided');
     }
-    try {
-      const payload = this.JwtService.verify(refreshToken, {
-        secret: process.env.REFRESH_SECRET,
-      });
 
-      //  Vérifier si l'utilisateur existe toujours
-      const user = await this.userService.getUserById(payload.sub);
-      if (!user) {
-        throw new UnauthorizedException('User no longer exists');
-      }
-
-      // 🔥 Générer un nouvel Access Token
-      this.authService.generateAccessToken(res, {
-        sub: user.userId,
-        role: user.accountType,
-      });
-      return res.status(200).json({ message: 'Token refreshed' });
-    } catch (error) {
-      throw new UnauthorizedException('Invalid refresh token');
-    }
+    return this.authService.refreshAccessToken(refreshToken, res);
   }
 
   @Post('logout')

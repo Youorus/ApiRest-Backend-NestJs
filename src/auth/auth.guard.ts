@@ -28,6 +28,7 @@ export class AuthGuard implements CanActivate {
       IS_PUBLIC_KEY,
       context.getHandler(),
     );
+    console.log('🔒 Route publique :', isPublic);
     if (isPublic) {
       return true; // ✅ Autoriser l'accès si la route est publique
     }

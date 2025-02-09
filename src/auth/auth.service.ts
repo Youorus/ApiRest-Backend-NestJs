@@ -90,4 +90,35 @@ export class AuthService {
       return false;
     }
   }
+
+  async refreshAccessToken(refreshToken: string, res: Response) {
+    try {
+      const payload = this.jwtService.verify(refreshToken, {
+        secret: process.env.REFRESH_SECRET,
+      });
+
+      const user = await this.usersService.getUserByEmail(payload.sub);
+      if (!user) {
+        throw new UnauthorizedException('User no longer exists');
+      }
+
+      const newPayload = {
+        sub: user.userId,
+        role: user.accountType,
+      };
+
+      const newAccessToken = this.generateAccessToken(res, newPayload);
+      console.log('✅ Nouveau token généré avec succès ' + newAccessToken);
+
+      return res.status(200).json({
+        message: 'Token refreshed', // ✅ Simple message sans besoin de renvoyer le token
+      });
+    } catch (error) {
+      console.error(
+        '❌ Erreur lors du rafraîchissement du token :',
+        error.message,
+      );
+      throw new UnauthorizedException('Invalid or expired refresh token');
+    }
+  }
 }
