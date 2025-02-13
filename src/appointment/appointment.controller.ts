@@ -2,7 +2,6 @@ import {
   Body,
   Controller,
   Get,
-  Param,
   Post,
   Query,
   UsePipes,
@@ -36,10 +35,5 @@ export class AppointmentController {
   ) {
     const targetEmail = email ?? user.email; // Utilise l'email fourni ou celui de l'utilisateur connecté
     return this.appointmentService.findAllAppointmentsClient(targetEmail);
-  }
-
-  @Get('availability/:date')
-  async getAvailableTimeSlots(@Param('date') date: string) {
-    return { data: await this.appointmentService.getAvailableTimeSlots(date) };
   }
 }

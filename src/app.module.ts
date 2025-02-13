@@ -7,6 +7,7 @@ import { AdminModule } from './admin/admin.module';
 import { ClientModule } from './client/client.module';
 import { AvailabilityModule } from './availability/availability.module';
 import { AppointmentModule } from './appointment/appointment.module';
+import { UnavailabilityModule } from './unavailability/unavailability.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { AppointmentModule } from './appointment/appointment.module';
     ClientModule,
     AvailabilityModule,
     AppointmentModule,
+    UnavailabilityModule,
   ],
   controllers: [],
   providers: [],
