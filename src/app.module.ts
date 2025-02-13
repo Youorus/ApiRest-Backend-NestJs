@@ -5,6 +5,8 @@ import { PrismaModule } from './prisma/prisma.module';
 import { ProjectModule } from './project/project.module';
 import { AdminModule } from './admin/admin.module';
 import { ClientModule } from './client/client.module';
+import { AvailabilityModule } from './availability/availability.module';
+import { AppointmentModule } from './appointment/appointment.module';
 
 @Module({
   imports: [
@@ -14,6 +16,8 @@ import { ClientModule } from './client/client.module';
     ProjectModule,
     AdminModule,
     ClientModule,
+    AvailabilityModule,
+    AppointmentModule,
   ],
   controllers: [],
   providers: [],

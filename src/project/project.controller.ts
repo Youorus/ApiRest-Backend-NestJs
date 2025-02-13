@@ -1,7 +1,9 @@
 import {
   Body,
   Controller,
+  Get,
   Post,
+  Query,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
@@ -14,6 +16,11 @@ import { UserDto } from 'src/dto/create-user.dto';
 export class ProjectController {
   constructor(private readonly projectService: ProjectService) {}
 
+  @Get('all')
+  async getAllProjects() {
+    return this.projectService.findAllProjectsOrderedByDate();
+  }
+
   @Post('create')
   @UsePipes(new ValidationPipe({ whitelist: true }))
   async createProject(
@@ -21,5 +28,10 @@ export class ProjectController {
     @CurrentUser() user: UserDto, // Assurez-vous que le `user` contient l'email
   ) {
     return this.projectService.createProject(createProjectDto, user.email);
+  }
+
+  @Get('me')
+  async getClientProjects(@CurrentUser() user: UserDto) {
+    return this.projectService.findAllClientProjects(user.email);
   }
 }

@@ -40,4 +40,38 @@ export class ProjectService {
 
     return newProject;
   }
+
+  async findAllClientProjects(userEmail: string) {
+    return this.prisma.project.findMany({
+      where: {
+        client: {
+          user: {
+            email: userEmail,
+          },
+        },
+      },
+      include: {
+        admin: {
+          // Inclut l'admin responsable du projet
+          select: {
+            adminId: true,
+            userName: true, // Récupérer le nom de l'admin
+            user: {
+              select: {
+                email: true, // Récupérer l'email de l'admin
+              },
+            },
+          },
+        },
+      },
+    });
+  }
+
+  async findAllProjectsOrderedByDate() {
+    return this.prisma.project.findMany({
+      orderBy: {
+        createdAt: 'desc', // Trie du plus récent au plus ancien
+      },
+    });
+  }
 }
