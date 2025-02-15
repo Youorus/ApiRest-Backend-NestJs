@@ -4,8 +4,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import * as dayjs from 'dayjs';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { UnavailabilityService } from 'src/unavailability/unavailability.service';
+import { PrismaService } from '../prisma/prisma.service';
+import { UnavailabilityService } from '../unavailability/unavailability.service';
 
 @Injectable()
 export class AvailabilityService {
@@ -23,9 +23,7 @@ export class AvailabilityService {
         },
       });
 
-      // Transformer les disponibilités en liste de dates uniques
       const availableDates = new Set<string>();
-
       availabilities.forEach((slot) => {
         let currentDate = dayjs(slot.startDate);
         const endDate = dayjs(slot.endDate);
@@ -39,27 +37,20 @@ export class AvailabilityService {
         }
       });
 
-      return Array.from(availableDates); // Retourne un tableau de dates prêtes à l'emploi
+      return Array.from(availableDates);
     } catch (error) {
-      console.error(
-        'Erreur lors de la récupération des disponibilités :',
-        error,
-      );
-      throw new Error('Impossible de récupérer les dates disponibles.');
+      console.error('Error fetching available dates:', error);
+      throw new Error('Failed to retrieve available dates');
     }
   }
 
   async getAvailableTimeSlots(date: string) {
-    // 📌 Vérification du format de la date
     if (!dayjs(date, 'YYYY-MM-DD', true).isValid()) {
-      throw new BadRequestException(
-        'Invalid date format. Expected format: YYYY-MM-DD',
-      );
+      throw new BadRequestException('Invalid date format. Use YYYY-MM-DD');
     }
 
     const parsedDate = new Date(date);
 
-    // 📌 Récupérer les disponibilités pour la date choisie
     const availabilities = await this.prisma.availability.findMany({
       where: {
         startDate: { lte: parsedDate },
@@ -72,34 +63,45 @@ export class AvailabilityService {
       },
     });
 
-    if (!availabilities.length) {
-      throw new NotFoundException(
-        'No available time slots for the selected date.',
-      );
+    if (availabilities.length === 0) {
+      throw new NotFoundException('No availability for this date');
     }
 
-    // 📌 Récupérer les indisponibilités (rendez-vous pris inclus)
     const unavailabilities =
       await this.unavailabilityService.getUnavailabilitiesForDate(date);
 
-    // 📌 Générer les créneaux horaires de 1 heure et exclure ceux qui sont bloqués
     return availabilities.flatMap(({ startTime, endTime, adminId }) => {
-      const slots: { startTime: string; endTime: string; adminId: number }[] =
-        [];
-      let current = dayjs(startTime);
-      const end = dayjs(endTime);
+      const slots: Array<{
+        startTime: string;
+        endTime: string;
+        adminId: number;
+      }> = [];
 
-      while (current.isBefore(end)) {
+      // Combine date with availability times
+      const startDate = dayjs(parsedDate)
+        .set('hour', startTime.getHours())
+        .set('minute', startTime.getMinutes());
+
+      const endDate = dayjs(parsedDate)
+        .set('hour', endTime.getHours())
+        .set('minute', endTime.getMinutes());
+
+      let current = startDate;
+
+      while (current.isBefore(endDate)) {
         const next = current.add(1, 'hour');
-        if (next.isAfter(end)) break;
+        if (next.isAfter(endDate)) break;
 
-        // ✅ Exclure les créneaux déjà bloqués
-        const isBlocked = unavailabilities.some(
-          (unavail) =>
+        // Nouvelle vérification robuste
+        const isBlocked = unavailabilities.some((unavail) => {
+          const unavailStart = dayjs(unavail.startTime);
+          const unavailEnd = dayjs(unavail.endTime);
+          return (
             unavail.adminId === adminId &&
-            dayjs(unavail.startTime).isBefore(next) &&
-            dayjs(unavail.endTime).isAfter(current),
-        );
+            current.isBefore(unavailEnd) &&
+            next.isAfter(unavailStart)
+          );
+        });
 
         if (!isBlocked) {
           slots.push({
@@ -111,7 +113,6 @@ export class AvailabilityService {
 
         current = next;
       }
-
       return slots;
     });
   }

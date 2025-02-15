@@ -4,6 +4,7 @@ import {
   Body,
   UsePipes,
   ValidationPipe,
+  Get,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import {
@@ -11,37 +12,45 @@ import {
   CreateCompanyDto,
   CreateIndividualDto,
   CreateStudentDto,
+  UserDto,
 } from 'src/dto/create-user.dto';
 import { Public } from 'src/auth/decorators/public.decorator';
+import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 
-@Controller('user/signup')
+@Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Public()
-  @Post('student')
+  @Post('signup/student')
   @UsePipes(new ValidationPipe({ whitelist: true }))
   async createStudent(@Body() createStudentDto: CreateStudentDto) {
     return this.userService.createStudent(createStudentDto);
   }
 
   @Public()
-  @Post('individual')
+  @Post('signup/individual')
   @UsePipes(new ValidationPipe({ whitelist: true }))
   async createIndividual(@Body() createIndividualDto: CreateIndividualDto) {
     return this.userService.createIndividual(createIndividualDto);
   }
 
   @Public()
-  @Post('company')
+  @Post('signup/company')
   @UsePipes(new ValidationPipe({ whitelist: true }))
   async createCompany(@Body() createCompanyDto: CreateCompanyDto) {
     return this.userService.createCompany(createCompanyDto);
   }
-
-  @Post('admin')
+  @Public()
+  @Post('signup/admin')
   @UsePipes(new ValidationPipe({ whitelist: true }))
   async createAdmin(@Body() createAdminDto: CreateAdminDto) {
     return this.userService.createAdmin(createAdminDto);
+  }
+
+  @Get('profile')
+  async getProfile(@CurrentUser() user: UserDto) {
+    console.log('Utilisateur connecté :', user);
+    return this.userService.getProfile(user.email);
   }
 }

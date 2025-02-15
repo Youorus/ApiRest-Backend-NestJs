@@ -1,11 +1,4 @@
-import {
-  BadRequestException,
-  HttpException,
-  Injectable,
-  InternalServerErrorException,
-  NotFoundException,
-} from '@nestjs/common';
-import dayjs from 'dayjs';
+import { Injectable } from '@nestjs/common';
 import { ClientService } from 'src/client/client.service';
 import { CreateAppointmentDto } from 'src/dto/create-appointment.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -67,8 +60,8 @@ export class AppointmentService {
         },
       },
       include: {
-        client: { include: { user: true } },
-        admin: { include: { user: true } },
+        admin: { select: { userName: true } },
+        project: { select: { title: true } }, // Récupérer uniquement le titre du projet
       },
     });
   }

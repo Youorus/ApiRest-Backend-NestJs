@@ -7,7 +7,7 @@ import {
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
-import { CurrentUser } from 'src/auth/decorators/urrent-user.decorator';
+import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { AppointmentService } from './appointment.service';
 import { CreateAppointmentDto } from 'src/dto/create-appointment.dto';
 import { UserDto } from 'src/dto/create-user.dto';

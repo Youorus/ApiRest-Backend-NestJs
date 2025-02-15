@@ -3,13 +3,12 @@ import {
   Controller,
   Get,
   Post,
-  Query,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
 import { CreateProjectDto } from 'src/dto/create-project.dto';
 import { ProjectService } from './project.service';
-import { CurrentUser } from 'src/auth/decorators/urrent-user.decorator';
+import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { UserDto } from 'src/dto/create-user.dto';
 
 @Controller('project')

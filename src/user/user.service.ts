@@ -152,4 +152,40 @@ export class UserService implements IUserCreateService {
       where: { userId }, //Requête plus rapide
     });
   }
+
+  async getProfile(email: string) {
+    try {
+      const userProfile = await this.prisma.user.findUnique({
+        where: { email },
+        select: {
+          email: true,
+          accountType: true,
+          student: {
+            select: { lastName: true },
+          },
+          client: {
+            select: {
+              individual: { select: { lastName: true } },
+              company: { select: { companyName: true } },
+            },
+          },
+          admin: {
+            select: { userName: true },
+          },
+        },
+      });
+
+      if (!userProfile) {
+        throw new Error('Aucun utilisateur trouvé avec cet email.');
+      }
+
+      return userProfile;
+    } catch (error) {
+      console.error(
+        'Erreur lors de la récupération du profil :',
+        error.message,
+      );
+      throw new Error('Impossible de récupérer le profil utilisateur.');
+    }
+  }
 }
