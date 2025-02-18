@@ -2,13 +2,18 @@ import { JwtService } from '@nestjs/jwt';
 import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
 import * as fs from 'fs';
+import * as path from 'path';
 import * as cookieParser from 'cookie-parser';
 import { AuthGuard } from './auth/auth.guard';
 
 async function bootstrap() {
+  // Définir le chemin absolu vers le dossier SSL
+  const sslPath = path.join(__dirname, '..', 'ssl');
+
+  // Charger le certificat et la clé privée
   const httpsOptions = {
-    key: fs.readFileSync('server.key'),
-    cert: fs.readFileSync('server.cert'),
+    key: fs.readFileSync(path.join(sslPath, 'localhost-key.pem')),
+    cert: fs.readFileSync(path.join(sslPath, 'localhost.pem')),
   };
   const app = await NestFactory.create(AppModule, { httpsOptions });
   const reflector = app.get(Reflector);
@@ -21,11 +26,11 @@ async function bootstrap() {
   app.useGlobalGuards(new AuthGuard(jwtService, reflector));
 
   app.enableCors({
-    origin: 'https://localhost:3020', // Accepter uniquement ce domaine
+    origin: 'https://localhost:3021', // Accepter uniquement ce domaine
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true, // Autoriser l'envoi de cookies (si nécessaire)
   });
-  await app.listen(process.env.PORT ?? 3014);
+  await app.listen(process.env.PORT ?? 3017);
 }
 bootstrap();

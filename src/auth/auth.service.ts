@@ -103,7 +103,7 @@ export class AuthService {
       }
 
       const newPayload = {
-        sub: user.userId,
+        sub: user.email,
         role: user.accountType,
       };
 

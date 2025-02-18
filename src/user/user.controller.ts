@@ -50,7 +50,6 @@ export class UserController {
 
   @Get('profile')
   async getProfile(@CurrentUser() user: UserDto) {
-    console.log('Utilisateur connecté :', user);
     return this.userService.getProfile(user.email);
   }
 }

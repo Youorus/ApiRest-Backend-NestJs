@@ -165,7 +165,7 @@ export class UserService implements IUserCreateService {
           },
           client: {
             select: {
-              individual: { select: { lastName: true } },
+              individual: { select: { firstName: true, lastName: true } },
               company: { select: { companyName: true } },
             },
           },
@@ -181,10 +181,7 @@ export class UserService implements IUserCreateService {
 
       return userProfile;
     } catch (error) {
-      console.error(
-        'Erreur lors de la récupération du profil :',
-        error.message,
-      );
+      console.error('Erreur lors de la récupération du profil :', error);
       throw new Error('Impossible de récupérer le profil utilisateur.');
     }
   }
