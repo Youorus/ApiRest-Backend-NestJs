@@ -5,7 +5,10 @@ import {
   UsePipes,
   ValidationPipe,
   Get,
+  Res,
+  HttpStatus,
 } from '@nestjs/common';
+import { Response } from 'express';
 import { UserService } from './user.service';
 import {
   CreateAdminDto,
@@ -24,28 +27,45 @@ export class UserController {
   @Public()
   @Post('signup/student')
   @UsePipes(new ValidationPipe({ whitelist: true }))
-  async createStudent(@Body() createStudentDto: CreateStudentDto) {
-    return this.userService.createStudent(createStudentDto);
+  async createStudent(
+    @Body() createStudentDto: CreateStudentDto,
+    @Res() res: Response,
+  ) {
+    await this.userService.createStudent(createStudentDto);
+    return res.status(HttpStatus.CREATED).send();
   }
 
   @Public()
   @Post('signup/individual')
   @UsePipes(new ValidationPipe({ whitelist: true }))
-  async createIndividual(@Body() createIndividualDto: CreateIndividualDto) {
-    return this.userService.createIndividual(createIndividualDto);
+  async createIndividual(
+    @Body() createIndividualDto: CreateIndividualDto,
+    @Res() res: Response,
+  ) {
+    await this.userService.createIndividual(createIndividualDto);
+    return res.status(HttpStatus.CREATED).send();
   }
 
   @Public()
   @Post('signup/company')
   @UsePipes(new ValidationPipe({ whitelist: true }))
-  async createCompany(@Body() createCompanyDto: CreateCompanyDto) {
-    return this.userService.createCompany(createCompanyDto);
+  async createCompany(
+    @Body() createCompanyDto: CreateCompanyDto,
+    @Res() res: Response,
+  ) {
+    await this.userService.createCompany(createCompanyDto);
+    return res.status(HttpStatus.CREATED).send();
   }
+
   @Public()
   @Post('signup/admin')
   @UsePipes(new ValidationPipe({ whitelist: true }))
-  async createAdmin(@Body() createAdminDto: CreateAdminDto) {
-    return this.userService.createAdmin(createAdminDto);
+  async createAdmin(
+    @Body() createAdminDto: CreateAdminDto,
+    @Res() res: Response,
+  ) {
+    await this.userService.createAdmin(createAdminDto);
+    return res.status(HttpStatus.CREATED).send();
   }
 
   @Get('profile')

@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Param,
   Post,
   UsePipes,
   ValidationPipe,
@@ -32,5 +33,9 @@ export class ProjectController {
   @Get('me')
   async getClientProjects(@CurrentUser() user: UserDto) {
     return this.projectService.findAllClientProjects(user.email);
+  }
+  @Get(':id')
+  async getProjectById(@Param('id') projectId: string) {
+    return this.projectService.findProjectById(projectId);
   }
 }

@@ -10,7 +10,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+    url      = env("DATABASE_URL")
 }
 
 enum AccountType {
@@ -51,6 +51,20 @@ enum ProjectCategory {
   SECURITY_HOSTING    // Sécurité / Hébergement
   MAINTENANCE_SUPPORT // Maintenance / Dépannage
 }
+
+enum PaymentStatus {
+  PENDING     // En attente
+  COMPLETED   // Terminé
+  FAILED      // Échoué
+  REFUNDED    // Remboursé
+}
+
+enum SubscriptionType {
+  BASIC          // Abonnement de base
+  PREMIUM        // Abonnement premium
+  ENTERPRISE     // Abonnement entreprise avec toutes les fonctionnalités
+}
+
 
 enum ServiceType {
   WEBSITE_CREATION       // Création de site web
@@ -202,15 +216,20 @@ model Project {
   description   String?        @db.VarChar(2000)
   category      ProjectCategory
   service       ServiceType
+  price         Float          
   contributors  Int            @default(0)
   createdAt     DateTime       @default(now())
   progress      Int            @default(0)
+  hasSubscription  Boolean     @default(false) // Indique si le projet a un abonnement actif
   gitRepoUrl    String?
   status        ProjectStatus  @default(RECEIVED)
 
  // Relation avec Client
   clientId      Int
   client        Client         @relation(fields: [clientId], references: [clientId], onDelete: Cascade)
+
+
+ subscription  Subscription?
 
   // Relation avec Admin
   adminId       Int
@@ -221,6 +240,25 @@ model Project {
 
   // Relation avec Mission
   mission       Mission[]      // Un projet peut avoir plusieurs missions
+
+  payment Payment[]
+}
+
+model Payment {
+  paymentId     Int        @id @default(autoincrement())// ID unique pour le paiement
+  projectId     Int           // Clé étrangère vers le projet
+  amount        Float         // Montant payé
+  subscriptionId  Int?  
+  currency      String        @default("EUR") // Devise utilisée
+  status        PaymentStatus @default(PENDING) // Statut du paiement
+  stripePaymentId String?     // ID du paiement donné par Stripe
+  stripeSessionId String?     // ID de la session Stripe
+  paymentMethod    String?        // Méthode de paiement (ex: "card")
+  paymentReceiptUrl String?       // URL du reçu Stripe (optionnel)
+  createdAt     DateTime      @default(now()) // Date de création
+
+  project       Project       @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
+  subscription    Subscription? @relation(fields: [subscriptionId], references: [subscriptionId], onDelete: Cascade)
 }
 
 model Appointment {
@@ -280,3 +318,23 @@ model Unavailability {
   // Relation avec Admin
   admin        Admin              @relation(fields: [adminId], references: [adminId], onDelete: Cascade)
 }
+
+
+model Subscription {
+  subscriptionId Int              @id @default(autoincrement())  // ID unique de l'abonnement
+  projectId      Int              @unique // Clé étrangère vers un projet
+  type           SubscriptionType  // Type d'abonnement (enum)
+  price          Float            // Prix de l'abonnement
+  startDate      DateTime         // Date de début de l'abonnement
+  endDate        DateTime?        // Date de fin de l'abonnement (peut être null si illimité)
+  isActive       Boolean          @default(true) // Statut de l'abonnement (actif/inactif)
+  createdAt      DateTime         @default(now()) // Date de création
+  updatedAt      DateTime         @updatedAt      // Mise à jour automatique
+
+  // 🔥 Relation avec `Project`
+  project        Project            @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
+
+  // 🔥 Relation avec `Payment`
+  payments       Payment[]        // Un abonnement peut avoir plusieurs paiements
+}
+

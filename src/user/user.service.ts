@@ -10,23 +10,22 @@ import {
   CreateIndividualDto,
   CreateStudentDto,
 } from 'src/dto/create-user.dto';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 import { User } from '@prisma/client';
 import { LoginDto } from 'src/dto/login.dto';
-import { IUserCreateService } from './interfaces/user-service.interface';
 
 @Injectable()
-export class UserService implements IUserCreateService {
+export class UserService {
   constructor(private readonly prisma: PrismaService) {}
 
   private async hashPassword(password: string): Promise<string> {
     return bcrypt.hash(password, 10);
   }
 
-  async createStudent(data: CreateStudentDto) {
+  async createStudent(data: CreateStudentDto): Promise<void> {
     const hashedPassword = await this.hashPassword(data.password);
 
-    return this.prisma.user.create({
+    await this.prisma.user.create({
       data: {
         email: data.email,
         password: hashedPassword,
@@ -48,10 +47,10 @@ export class UserService implements IUserCreateService {
     });
   }
 
-  async createIndividual(data: CreateIndividualDto) {
+  async createIndividual(data: CreateIndividualDto): Promise<void> {
     const hashedPassword = await this.hashPassword(data.password);
 
-    return this.prisma.user.create({
+    await this.prisma.user.create({
       data: {
         email: data.email,
         password: hashedPassword,
@@ -74,10 +73,10 @@ export class UserService implements IUserCreateService {
     });
   }
 
-  async createCompany(data: CreateCompanyDto) {
+  async createCompany(data: CreateCompanyDto): Promise<void> {
     const hashedPassword = await this.hashPassword(data.password);
 
-    return this.prisma.user.create({
+    await this.prisma.user.create({
       data: {
         email: data.email,
         password: hashedPassword,
@@ -100,10 +99,10 @@ export class UserService implements IUserCreateService {
     });
   }
 
-  async createAdmin(data: CreateAdminDto) {
+  async createAdmin(data: CreateAdminDto): Promise<void> {
     const hashedPassword = await this.hashPassword(data.password);
 
-    return this.prisma.user.create({
+    await this.prisma.user.create({
       data: {
         email: data.email,
         password: hashedPassword,
@@ -134,7 +133,7 @@ export class UserService implements IUserCreateService {
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       throw new UnauthorizedException({
-        errorCode: 'INVALID_PASSWORD',
+        errorCode: 'INVALID_CREDENTIALS',
       });
     }
 

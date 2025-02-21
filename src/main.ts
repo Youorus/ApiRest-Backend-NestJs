@@ -3,12 +3,13 @@ import { NestFactory, Reflector } from '@nestjs/core';
 import { AppModule } from './app.module';
 import * as fs from 'fs';
 import * as path from 'path';
+import * as express from 'express';
 import * as cookieParser from 'cookie-parser';
 import { AuthGuard } from './auth/auth.guard';
 
 async function bootstrap() {
   // Définir le chemin absolu vers le dossier SSL
-  const sslPath = path.join(__dirname, '..', 'ssl');
+  const sslPath = path.join('ssl');
 
   // Charger le certificat et la clé privée
   const httpsOptions = {
@@ -22,15 +23,18 @@ async function bootstrap() {
   // Activer Cookie-Parser (nécessaire pour lire les tokens stockés en cookie)
   app.use(cookieParser());
 
+  // ✅ Désactive le parsing JSON uniquement pour la route du Webhook Stripe
+  app.use('/payement/webhook', express.raw({ type: 'application/json' }));
+
   //  Appliquer le AuthGuard globalement
   app.useGlobalGuards(new AuthGuard(jwtService, reflector));
 
   app.enableCors({
-    origin: 'https://localhost:3021', // Accepter uniquement ce domaine
+    origin: 'https://localhost:3000', // Accepter uniquement ce domaine
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true, // Autoriser l'envoi de cookies (si nécessaire)
   });
-  await app.listen(process.env.PORT ?? 3017);
+  await app.listen(process.env.PORT ?? 3002);
 }
 bootstrap();
