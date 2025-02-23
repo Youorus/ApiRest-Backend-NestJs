@@ -8,5 +8,6 @@ import { ClientModule } from 'src/client/client.module';
   imports: [AdminModule, ClientModule],
   controllers: [ProjectController],
   providers: [ProjectService],
+  exports: [ProjectService],
 })
 export class ProjectModule {}

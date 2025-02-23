@@ -24,7 +24,7 @@ async function bootstrap() {
   app.use(cookieParser());
 
   // ✅ Désactive le parsing JSON uniquement pour la route du Webhook Stripe
-  app.use('/payement/webhook', express.raw({ type: 'application/json' }));
+  app.use('/stripe/webhook', express.raw({ type: 'application/json' }));
 
   //  Appliquer le AuthGuard globalement
   app.useGlobalGuards(new AuthGuard(jwtService, reflector));

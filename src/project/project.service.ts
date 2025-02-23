@@ -102,7 +102,7 @@ export class ProjectService {
             },
           },
         },
-        payement: {
+        payment: {
           // ✅ Corrigé "payement" en "payment" conformément à ton schéma
           select: {
             amount: true,
@@ -116,8 +116,8 @@ export class ProjectService {
     }
 
     // ✅ Calcul du montant total payé
-    const totalPaid = project.payement.reduce(
-      (sum, payement) => sum + (payement.amount ?? 0),
+    const totalPaid = project.payment.reduce(
+      (sum, payment) => sum + (payment.amount ?? 0),
       0,
     );
 
@@ -150,6 +150,16 @@ export class ProjectService {
           lastName: student!.lastName,
         })),
     };
+  }
+
+  async updateProjectSubscriptionStatus(
+    projectId: number,
+    hasSubscription: boolean,
+  ) {
+    return this.prisma.project.update({
+      where: { projectId },
+      data: { hasSubscription },
+    });
   }
 }
 

@@ -10,6 +10,9 @@ import { AvailabilityModule } from './availability/availability.module';
 import { AppointmentModule } from './appointment/appointment.module';
 import { UnavailabilityModule } from './unavailability/unavailability.module';
 import { PaymentModule } from './payment/payment.module';
+import { SubscriptionModule } from './subscription/subscription.module';
+import { StripeModule } from './stripe/stripe.module';
+import { InvoiceModule } from './invoice/invoice.module';
 
 @Module({
   imports: [
@@ -24,6 +27,9 @@ import { PaymentModule } from './payment/payment.module';
     AppointmentModule,
     UnavailabilityModule,
     PaymentModule,
+    SubscriptionModule,
+    StripeModule,
+    InvoiceModule,
   ],
   controllers: [],
   providers: [],

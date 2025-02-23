@@ -325,9 +325,10 @@ model Subscription {
   projectId      Int              @unique // Clé étrangère vers un projet
   type           SubscriptionType  // Type d'abonnement (enum)
   price          Float            // Prix de l'abonnement
+  stripeSubscriptionId  String?   @unique
   startDate      DateTime         // Date de début de l'abonnement
   endDate        DateTime?        // Date de fin de l'abonnement (peut être null si illimité)
-  isActive       Boolean          @default(true) // Statut de l'abonnement (actif/inactif)
+  isActive       Boolean          @default(false) // Statut de l'abonnement (actif/inactif)
   createdAt      DateTime         @default(now()) // Date de création
   updatedAt      DateTime         @updatedAt      // Mise à jour automatique
 
