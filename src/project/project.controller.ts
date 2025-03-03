@@ -36,6 +36,7 @@ export class ProjectController {
   }
   @Get(':id')
   async getProjectById(@Param('id') projectId: string) {
-    return this.projectService.findProjectById(projectId);
+    const id = parseInt(projectId);
+    return this.projectService.findProjectById(id);
   }
 }

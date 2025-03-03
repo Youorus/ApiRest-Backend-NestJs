@@ -88,7 +88,7 @@ export class StripeService {
     }
   }
 
-  async createPaymentSession(projectId: string, amount: number) {
+  async createPaymentSession(projectId: number, amount: number) {
     if (!amount || amount <= 0)
       throw new BadRequestException('Le montant doit être positif.');
 
@@ -127,7 +127,7 @@ export class StripeService {
     return { url: session?.url };
   }
 
-  async createSubscriptionSession(projectId: string, plan: string) {
+  async createSubscriptionSession(projectId: number, plan: string) {
     if (!this.PRICES[plan])
       throw new BadRequestException(`Le plan "${plan}" est invalide.`);
 
@@ -309,9 +309,8 @@ export class StripeService {
         subscription.subscriptionId,
       );
     } else {
-      await this.subscriptionService.renewSubscription(
+      await this.subscriptionService.updateSubscriptionEndDate(
         subscription.subscriptionId,
-        new Date(invoice.lines.data[0].period.end * 1000),
       );
     }
 

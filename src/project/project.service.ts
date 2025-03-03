@@ -25,7 +25,9 @@ export class ProjectService {
     // 2. Créer le projet avec la relation client et admin
     const newProject = await this.prisma.project.create({
       data: {
-        title: createProjectDto.title,
+        title:
+          createProjectDto.title.charAt(0).toUpperCase() +
+          createProjectDto.title.slice(1),
         description: createProjectDto.description,
         service: createProjectDto.service,
         price: price,
@@ -44,7 +46,6 @@ export class ProjectService {
 
     return newProject;
   }
-
   async findAllClientProjects(userEmail: string) {
     return this.prisma.project.findMany({
       where: {
@@ -56,17 +57,17 @@ export class ProjectService {
       },
       include: {
         admin: {
-          // Inclut l'admin responsable du projet
           select: {
             adminId: true,
-            userName: true, // Récupérer le nom de l'admin
+            userName: true,
             user: {
               select: {
-                email: true, // Récupérer l'email de l'admin
+                email: true,
               },
             },
           },
         },
+        subscription: true,
       },
     });
   }
@@ -79,19 +80,17 @@ export class ProjectService {
     });
   }
 
-  async findProjectById(projectId: string) {
+  async findProjectById(projectId: number) {
     const project = await this.prisma.project.findUnique({
-      where: { projectId: parseInt(projectId) },
+      where: { projectId },
       include: {
         admin: {
-          // ✅ Récupérer l'admin sous forme d'objet complet
           select: {
             adminId: true,
             userName: true,
           },
         },
         mission: {
-          // ✅ Récupérer les étudiants contributeurs via les missions
           select: {
             assignedStudent: {
               select: {
@@ -103,9 +102,13 @@ export class ProjectService {
           },
         },
         payment: {
-          // ✅ Corrigé "payement" en "payment" conformément à ton schéma
           select: {
             amount: true,
+          },
+        },
+        subscription: {
+          select: {
+            type: true, // ✅ Récupère le type d'abonnement lié au projet
           },
         },
       },
@@ -115,13 +118,11 @@ export class ProjectService {
       throw new NotFoundException(`Projet avec l'ID ${projectId} introuvable.`);
     }
 
-    // ✅ Calcul du montant total payé
     const totalPaid = project.payment.reduce(
       (sum, payment) => sum + (payment.amount ?? 0),
       0,
     );
 
-    // ✅ Calcul de la progression du paiement (éviter la division par zéro)
     const payementProgress =
       project.price > 0 ? Math.min((totalPaid / project.price) * 100, 100) : 0;
 
@@ -137,13 +138,14 @@ export class ProjectService {
       payementProgress,
       totalPaid,
 
-      // ✅ Retourne l'admin sous forme d'objet structuré
+      // ✅ Ajout du subscriptionType
+      subscriptionType: project.subscription?.type || null,
+
       admin: project.admin,
 
-      // ✅ Retourne les étudiants assignés sous forme de tableau propre
       students: project.mission
-        .map((mission) => mission.assignedStudent) // Extrait directement les étudiants assignés
-        .filter((student) => student !== null) // ✅ Évite les valeurs nulles
+        .map((mission) => mission.assignedStudent)
+        .filter((student) => student !== null)
         .map((student) => ({
           id: student!.studentId,
           firstName: student!.firstName,

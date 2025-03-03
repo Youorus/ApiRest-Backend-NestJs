@@ -9,14 +9,14 @@ export class StripeController {
 
   @Post('create-payment-session')
   async createPaymentSession(
-    @Body() body: { projectId: string; amount: number },
+    @Body() body: { projectId: number; amount: number },
   ) {
     return this.stripeService.createPaymentSession(body.projectId, body.amount);
   }
 
   @Post('create-subscription-session')
   async createSubscriptionSession(
-    @Body() body: { projectId: string; plan: string },
+    @Body() body: { projectId: number; plan: string },
   ) {
     return this.stripeService.createSubscriptionSession(
       body.projectId,

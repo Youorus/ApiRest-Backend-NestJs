@@ -245,21 +245,21 @@ model Project {
 }
 
 model Payment {
-  paymentId     Int        @id @default(autoincrement())// ID unique pour le paiement
-  projectId     Int           // Clé étrangère vers le projet
-  amount        Float         // Montant payé
-  subscriptionId  Int?  
-  currency      String        @default("EUR") // Devise utilisée
-  status        PaymentStatus @default(PENDING) // Statut du paiement
-  stripePaymentId String?     // ID du paiement donné par Stripe
-  stripeSessionId String?     // ID de la session Stripe
-  paymentMethod    String?        // Méthode de paiement (ex: "card")
-  paymentReceiptUrl String?       // URL du reçu Stripe (optionnel)
-  createdAt     DateTime      @default(now()) // Date de création
+    paymentId     Int        @id @default(autoincrement())// ID unique pour le paiement
+    projectId     Int           // Clé étrangère vers le projet
+    amount        Float         // Montant payé
+    subscriptionId  Int?  
+    currency      String        @default("EUR") // Devise utilisée
+    status        PaymentStatus @default(PENDING) // Statut du paiement
+    stripePaymentId String?     // ID du paiement donné par Stripe
+    stripeSessionId String?     // ID de la session Stripe
+    paymentMethod    String?        // Méthode de paiement (ex: "card")
+    paymentReceiptUrl String?       // URL du reçu Stripe (optionnel)
+    createdAt     DateTime      @default(now()) // Date de création
 
-  project       Project       @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
-  subscription    Subscription? @relation(fields: [subscriptionId], references: [subscriptionId], onDelete: Cascade)
-}
+    project       Project       @relation(fields: [projectId], references: [projectId], onDelete: Cascade)
+    subscription    Subscription? @relation(fields: [subscriptionId], references: [subscriptionId], onDelete: Cascade)
+  }
 
 model Appointment {
   id          Int              @id @default(autoincrement())
@@ -325,7 +325,7 @@ model Subscription {
   projectId      Int              @unique // Clé étrangère vers un projet
   type           SubscriptionType  // Type d'abonnement (enum)
   price          Float            // Prix de l'abonnement
-  stripeSubscriptionId  String?   @unique
+  stripeSubscriptionId  String?  
   startDate      DateTime         // Date de début de l'abonnement
   endDate        DateTime?        // Date de fin de l'abonnement (peut être null si illimité)
   isActive       Boolean          @default(false) // Statut de l'abonnement (actif/inactif)

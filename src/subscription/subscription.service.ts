@@ -49,15 +49,11 @@ export class SubscriptionService {
   /**
    *  Met à jour la date de fin d'une subscription (renouvellement)
    */
-  async updateSubscriptionEndDate(
-    subscriptionId: number,
-    currentEndDate: Date,
-  ) {
+  async updateSubscriptionEndDate(subscriptionId: number) {
     try {
+      const currentEndDate = new Date();
       const newEndDate = new Date(
-        new Date(currentEndDate).setMonth(
-          new Date(currentEndDate).getMonth() + 1,
-        ),
+        currentEndDate.setMonth(currentEndDate.getMonth() + 1),
       );
 
       await this.prisma.subscription.update({
@@ -69,7 +65,7 @@ export class SubscriptionService {
         `Abonnement prolongé jusqu'au ${newEndDate.toISOString()} pour l'ID ${subscriptionId}`,
       );
     } catch (error) {
-      console.error(' Erreur lors de la mise à jour de l’abonnement:', error);
+      console.error('Erreur lors de la mise à jour de l’abonnement:', error);
       throw new InternalServerErrorException(
         'Erreur lors du renouvellement de l’abonnement',
       );
@@ -93,27 +89,6 @@ export class SubscriptionService {
       console.error('❌ Erreur lors de l’activation de l’abonnement:', error);
       throw new InternalServerErrorException(
         "Erreur lors de l'activation de l’abonnement",
-      );
-    }
-  }
-
-  /**
-   * 🔄 Renouvelle un abonnement en mettant à jour sa date de fin
-   */
-  async renewSubscription(subscriptionId: number, newEndDate: Date) {
-    try {
-      await this.prisma.subscription.update({
-        where: { subscriptionId },
-        data: { endDate: newEndDate, isActive: true },
-      });
-
-      console.log(
-        `🔄 Abonnement renouvelé avec succès pour l'ID ${subscriptionId} jusqu'au ${newEndDate.toISOString()}`,
-      );
-    } catch (error) {
-      console.error('❌ Erreur lors du renouvellement de l’abonnement:', error);
-      throw new InternalServerErrorException(
-        'Erreur lors du renouvellement de l’abonnement',
       );
     }
   }
