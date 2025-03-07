@@ -11,10 +11,12 @@ import {
   Req,
   UnauthorizedException,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from '../dto/login.dto'; // Vérifie que ce fichier existe bien
 import { Response } from 'express';
+import { AuthGuard } from '@nestjs/passport';
 import { UserExistsDto } from 'src/dto/create-user.dto';
 import { Public } from './decorators/public.decorator';
 
@@ -28,6 +30,12 @@ export class AuthController {
     private readonly userService: UserService,
     private readonly JwtService: JwtService,
   ) {}
+
+  @Public()
+  @Get('google')
+  async googleAuth() {
+    // Cette route redirige vers Google OAuth
+  }
 
   @Public()
   @Post('login')
@@ -65,5 +73,25 @@ export class AuthController {
 
     const exists = await this.authService.userExists(email);
     return { exists };
+  }
+
+  @Get('google/callback')
+  async googleAuthRedirect(@Req() req, @Res() res: Response) {
+    const user = req.user;
+
+    if (!user) {
+      return res.redirect('/login?error=Google authentication failed');
+    }
+
+    if (user.newUser) {
+      return res.redirect(`/register?email=${user.email}`);
+    }
+
+    // Générer Access et Refresh Token comme pour le login classique
+    const payload = { sub: user.email, role: user.accountType };
+    await this.authService.generateAccessToken(res, payload);
+    await this.authService.generateRefreshToken(res, payload);
+
+    return res.redirect('/dashboard');
   }
 }

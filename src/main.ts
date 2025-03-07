@@ -35,6 +35,6 @@ async function bootstrap() {
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true, // Autoriser l'envoi de cookies (si nécessaire)
   });
-  await app.listen(process.env.PORT ?? 3002);
+  await app.listen(process.env.PORT ?? 3005);
 }
 bootstrap();
